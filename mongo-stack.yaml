@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Unique key of the Deployment instance
+  name: mongodb-deployment
+spec:
+  minReadySeconds: 30
+  # 1 Pods should exist at all times.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:3.6.20-xenial
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-persistent-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # Unique key of the Service instance
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb-pod
+  ports:
+    - name: tcp
+      port: 27017
+      targetPort : 27017
+  type : ClusterIP
